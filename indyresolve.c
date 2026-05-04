@@ -15,6 +15,7 @@
 static int modules_count = 0;
 static module_data_t *modules[MAX_MODULES];
 static file_t dbs[MAX_MODULES];
+static void *module_lock;
 
 /* ---------------- TLS ---------------- */
 
@@ -43,6 +44,7 @@ static void event_module_load(void *drcontext, const module_data_t *info, bool l
     if (!strcmp(info->full_path, "[vdso]"))
         return;
 
+    dr_mutex_lock(module_lock);
     if (modules_count >= MAX_MODULES) {
         printf("warning: ignoring module %s\n", info->full_path);
         return;
@@ -53,6 +55,7 @@ static void event_module_load(void *drcontext, const module_data_t *info, bool l
     snprintf(dbname, sizeof(dbname), "%s.json", info->full_path);
     dbs[modules_count] = dr_open_file(dbname, DR_FILE_WRITE_APPEND | DR_FILE_ALLOW_LARGE);
     modules_count++;
+    dr_mutex_unlock(module_lock);
 }
 
 static int find_module_containing_addr(app_pc addr) {
@@ -187,6 +190,7 @@ static void thread_exit(void *drcontext)
 
     /* We do not bother about inter-thread edge deduplication (only intra-thread) */
     HASH_ITER(hh, tls->table, e, tmp) {
+        dr_mutex_lock(module_lock);
         int source_mod_idx = find_module_containing_addr(e->key.src);
         int target_mod_idx = find_module_containing_addr(e->key.dst);
 
@@ -210,6 +214,7 @@ static void thread_exit(void *drcontext)
 		    dr_write_file(dbs[source_mod_idx], buf, size);
 
         }
+        dr_mutex_unlock(module_lock);
 
         HASH_DEL(tls->table, e);
         dr_thread_free(drcontext, e, sizeof(entry_t));
@@ -235,6 +240,7 @@ static void event_exit(void)
 DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[])
 {
     dr_set_client_name("Indyresolve Client", "");
+    module_lock = dr_mutex_create();
 
     dr_register_thread_init_event(thread_init);
     dr_register_thread_exit_event(thread_exit);

@@ -98,7 +98,7 @@ def indyresolve_import(bv: BinaryView):
                         else:
                             sym_name = "sub_" + hex(t)[2:]
 
-                        comments.append(f"Internal {instr_type}: {sym_name} {hex(t)}")
+                        comments.append(f"[IR] Internal {instr_type}: {sym_name} {hex(t)}")
 
                     for t in external_targets:                        
                         _, _, tab_bv = get_tab_bv_for_file(t[0])
@@ -113,7 +113,7 @@ def indyresolve_import(bv: BinaryView):
                             else:
                                 sym_name = "UNKNOWN"
 
-                        comments.append(f"External {instr_type}: {sym_name} {hex(t[1])} in {t[0]}")
+                        comments.append(f"[IR] External {instr_type}: {sym_name} {hex(t[1])} in {t[0]}")
                     func.set_comment_at(addr, "\n".join(comments))
 
                     if instr_type == "Jump":                        
@@ -143,7 +143,7 @@ def indyresolve_follow(bv: BinaryView, addr: int):
         comm = func.get_comment_at(addr)
         if comm != '':
             comms = comm.split('\n')
-            external_calls = [line for line in comms if line.startswith("External")]
+            external_calls = [line for line in comms if line.startswith("[IR] External")]
             idx = get_choice_input("Select external call/jump", "Select external call/jump", external_calls)
             if idx is not None:
                 commline = external_calls[idx] 
