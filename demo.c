@@ -25,6 +25,6 @@ int main(int argc, char **argv) {
 	f = getf(argc);
 
 	printf("Calling f()\n");
-	return f();
+	f();
 }
 
