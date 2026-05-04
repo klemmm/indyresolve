@@ -12,3 +12,5 @@ if (NOT DynamoRIO_FOUND)
 endif(NOT DynamoRIO_FOUND)
 configure_DynamoRIO_client(indyresolve)
 use_DynamoRIO_extension(indyresolve drutil)
+add_executable(demo demo.c)
+
