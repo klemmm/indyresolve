@@ -14,7 +14,7 @@
 
 static int modules_count = 0;
 static module_data_t *modules[MAX_MODULES];
-static int dbs[MAX_MODULES];
+static file_t dbs[MAX_MODULES];
 
 /* ---------------- TLS ---------------- */
 
@@ -51,8 +51,7 @@ static void event_module_load(void *drcontext, const module_data_t *info, bool l
     modules[modules_count] = dr_copy_module_data(info);
 
     snprintf(dbname, sizeof(dbname), "%s.json", info->full_path);
-    dbs[modules_count] =
-        openat(AT_FDCWD, dbname, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    dbs[modules_count] = dr_open_file(dbname, DR_FILE_WRITE_APPEND | DR_FILE_ALLOW_LARGE);
     modules_count++;
 }
 
@@ -207,8 +206,8 @@ static void thread_exit(void *drcontext)
             if (size >= sizeof(buf)) abort(); /* should never happen */
 
             /* Let the kernel handle atomic file write */
-	    if (dbs[source_mod_idx] != 1)
-		    write(dbs[source_mod_idx], buf, size);
+	    if (dbs[source_mod_idx] != INVALID_FILE)
+		    dr_write_file(dbs[source_mod_idx], buf, size);
 
         }
 
@@ -224,8 +223,8 @@ static void thread_exit(void *drcontext)
 static void event_exit(void)
 {
     for (int i = 0; i < modules_count; i++) {
-        if (dbs[i] != -1)
-            close(dbs[i]);
+        if (dbs[i] != INVALID_FILE)
+            dr_close_file(dbs[i]);
         dr_free_module_data(modules[i]);
     }
 
