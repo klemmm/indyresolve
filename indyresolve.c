@@ -207,7 +207,8 @@ static void thread_exit(void *drcontext)
             if (size >= sizeof(buf)) abort(); /* should never happen */
 
             /* Let the kernel handle atomic file write */
-            write(dbs[source_mod_idx], buf, size);
+	    if (dbs[source_mod_idx] != 1)
+		    write(dbs[source_mod_idx], buf, size);
 
         }
 
