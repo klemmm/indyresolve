@@ -5,6 +5,10 @@
 
 IndyResolve is a quick tool I put together to bridge the gap between dynamic and static analysis. It uses a DynamoRIO client to trace indirect calls/jumps at runtime, and a Binary Ninja plugin to ingest that data. It patches the resolved targets straight into the Medium Level IL (MLIL), so your decompilation actually makes sense and cross-references work.
 
+<video src="https://klemm.7un.net/videos/indyresolve.mp4" controls="controls" muted="muted" width="100%">
+</video>
+
+
 ## How it works
 
 The project is split into two parts:
