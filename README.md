@@ -5,12 +5,9 @@
 
 ![Demo](assets/demo.gif)
 
-
-(Full version)[https://github.com/user-attachments/assets/70dc73fd-236c-4ec6-aefe-f145e98b3b78]
+Indirect jumps or calls (vtables, function pointers, switch tables) are a pain when reverse-engineering a binary statically.
 
 IndyResolve is a quick tool I put together to bridge the gap between dynamic and static analysis. It uses a DynamoRIO client to trace indirect calls/jumps at runtime, and a Binary Ninja plugin to ingest that data. It patches the resolved targets straight into the Medium Level IL (MLIL), so your decompilation actually makes sense and cross-references work.
-
-
 
 ## How it works
 
@@ -65,9 +62,20 @@ The plugin will run through the binary and update the analysis. For each indirec
 
 If the code jumps into an external library, right-click the instruction and select "Follow indirect external call/jump". If you have that library open in another Binja tab, it'll instantly switch tabs and jump straight to the target function.
 
-## Demo
+## Testing 
 
 There's a simple demo.c included in the repo. If you build the project, it'll compile demo. Run it under drrun, load it in Binja, and import the JSON to see how the indirect f() call gets resolved perfectly.
+
+<video src="https://raw.githubusercontent.com/YOUR_USERNAME/indyresolve/main/assets/demo.mp4" controls="controls" muted="muted" width="100%">
+</video>
+
+## Full demonstration with nginx
+
+Nginx is notorious for having a lot of indirect transfer of control, including calls to external libraries. 
+
+Here is a full demonstration of tracing nginx and resolving a chain of indirect transfer of controls, landing in the `ngx_http_image_filter_module.so` module.
+
+https://github.com/user-attachments/assets/70dc73fd-236c-4ec6-aefe-f145e98b3b78
 
 ## Ideas for improvements
 
